@@ -138,6 +138,27 @@ dist\WallpaperPicker.exe --random     静默抓一张随机壁纸并设为桌面
 触发器:    每 30 分钟
 ```
 
+### 加到桌面右键菜单
+
+想右键点一下桌面就换一张，用仓库里的脚本注册（**必须以管理员身份运行**，
+否则写不进 `HKEY_CLASSES_ROOT`）：
+
+```bash
+python app/tools/install_context_menu.py                    # 用 dist\WallpaperPicker.exe
+python app/tools/install_context_menu.py --exe D:\path\a.exe  # 指定别的 exe
+python app/tools/install_context_menu.py --uninstall        # 移除
+```
+
+它只在 `HKEY_CLASSES_ROOT\DesktopBackground\shell` 下建一个叫 `WallhavenRandom`
+的子键，菜单文字「随机换一张壁纸」，命令行是 `"<exe>" --random --silent`。
+卸载就是把整棵子树删掉，不留残渣。
+
+> **注册完要重启一次 explorer.exe 才会出现**（任务管理器 → Windows 资源管理器 →
+> 重新启动）。或者重跑脚本并加 `--restart-explorer`——那条路会关掉你所有打开的
+> 文件夹窗口，所以默认不做。
+>
+> exe 挪过位置（重新打包、换目录）就得重跑一次，注册表里存的是绝对路径。
+
 ### 从源码跑
 
 需要 [uv](https://docs.astral.sh/uv/)（本机已装）。
@@ -277,6 +298,7 @@ app/
    ├─ make_icon.py          生成图标
    ├─ make_screenshots.py   生成本地界面截图（输出目录不进仓库）
    ├─ make_version_file.py  生成 exe 的版本资源（版本号来自 config.py）
+   ├─ install_context_menu.py 把「随机换一张壁纸」注册到桌面右键菜单
    ├─ fakes.py              测试用的假客户端/假下载器/造数据辅助
    ├─ unit_test.py          纯逻辑单测（不联网、不开窗口，几秒跑完）
    ├─ feature_test.py       功能回归测试（开窗口，含可选的联网用例）
