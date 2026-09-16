@@ -14,6 +14,12 @@ import time
 from ctypes import wintypes
 from pathlib import Path
 
+# 控制台编码兜底：Windows 上 stdout 跟着系统代码页走，英文机器是 cp1252，
+# 打中文会抛 UnicodeEncodeError 把脚本带崩（CI 上踩过）。只降级 errors，不改 encoding。
+for _s in (sys.stdout, sys.stderr):
+    if _s is not None and hasattr(_s, "reconfigure"):
+        _s.reconfigure(errors="replace")
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_EXE = ROOT / "dist" / "WallpaperPicker.exe"
 LOG = Path.home() / "AppData" / "Roaming" / "auto_wallpaper" / "logs" / "wallpaper.log"

@@ -22,6 +22,13 @@ jobs:
     # 项目是 Windows 专用的：ctypes 调 user32、winreg 读注册表、Tk 界面
     runs-on: windows-latest
 
+    env:
+      # 让 Python 的 stdout 走 UTF-8，别跟着 runner 的系统代码页走。
+      # runner 是英文 Windows（cp1252），而测试脚本打印的全是中文——
+      # 第一次跑就死在 `unit_test.py` 的第一行 print 上，一项测试都没执行。
+      # 脚本内部也有 errors="replace" 兜底，但那样日志里全是问号，没法读。
+      PYTHONIOENCODING: utf-8
+
     steps:
       - uses: actions/checkout@v4
 

@@ -30,6 +30,14 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+# 控制台编码兜底：Windows 上 Python 的 stdout 跟着系统代码页走，中文机器是 cp936
+# （打得出中文，所以本地一直没暴露），英文机器是 cp1252——打中文直接抛
+# UnicodeEncodeError 把脚本带崩，CI 的 windows-latest 就是后者。
+# 只把编码错误降级成替换字符，不改 encoding，本地中文显示照旧。
+for _s in (sys.stdout, sys.stderr):
+    if _s is not None and hasattr(_s, "reconfigure"):
+        _s.reconfigure(errors="replace")
+
 from app.api import (  # noqa: E402
     RATE_LIMIT_FALLBACK_WAIT,
     WallpaperError,

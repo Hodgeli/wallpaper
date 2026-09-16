@@ -29,6 +29,12 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+# 控制台编码兜底：Windows 上 stdout 跟着系统代码页走，英文机器是 cp1252，
+# 打中文会抛 UnicodeEncodeError 把脚本带崩（CI 上踩过）。只降级 errors，不改 encoding。
+for _s in (sys.stdout, sys.stderr):
+    if _s is not None and hasattr(_s, "reconfigure"):
+        _s.reconfigure(errors="replace")
+
 REEXEC_FLAG = "WP_FEATURE_TEST_ISOLATED"
 
 FAILS: list[str] = []
