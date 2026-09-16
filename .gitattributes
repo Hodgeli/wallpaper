@@ -1,0 +1,19 @@
+# 换行符统一：仓库里存 LF，检出也是 LF
+# 显式写 eol=lf 是为了压过 Windows 上默认的 core.autocrlf=true——
+# 否则同一份文件会「提交时转成 LF、检出时转回 CRLF」来回折腾，
+# 编辑器里看着像整篇被改过。需要 CRLF 的见下面的 .bat / .cmd。
+* text=auto eol=lf
+
+# 明确标成二进制的文件，不做任何换行转换
+*.png binary
+*.ico binary
+*.jpg binary
+*.exe binary
+*.dll binary
+
+# 批处理必须 CRLF（目前没有，留个规则以防以后加）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 第三方许可证原文是从已安装的包里逐字复制的，别让 git 去动它们
+third_party_licenses/* -text

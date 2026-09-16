@@ -1,0 +1,13 @@
+# 运行时依赖。就这三条，不多不少——tkinter / ctypes / winreg 都是标准库。
+#
+# 版本按 2026-09-15 本机 .venv 的实际安装锁定。升级时请一起跑
+#   app/tools/feature_test.py --no-net 与 app/tools/smoke_test.py
+# 再决定要不要提交新版本号。
+requests==2.34.2
+Pillow==12.3.0
+
+# certifi 本来是 requests 的传递依赖，这里显式列出来是因为打包命令里
+# 有 `--collect-data certifi`（PyInstaller 6.x 的 certifi 钩子在本机是坏的，
+# 不显式收集的话打包版一联网就抛 "Could not find a suitable TLS CA certificate bundle"）。
+# 它一旦被 requests 换掉版本，打包配置就得跟着看，所以不适合"隐式存在"。
+certifi==2026.7.22

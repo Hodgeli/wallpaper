@@ -1,0 +1,25 @@
+# 编辑器 / IDE
+/.idea/
+/.vscode/
+*.code-workspace
+
+# 构建产物
+/build/
+/dist/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 打包出来的可执行文件（用 app/tools 下的脚本重新生成，不进仓库）
+*.exe
+
+# 界面截图与本机开发笔记（本地留存，不进仓库）
+/docs/
+
+# 本机工具链留下的目录
+/.workbuddy-ai/
+.ruff_cache/

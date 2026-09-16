@@ -1,0 +1,8 @@
+# 开发/构建期依赖。跑源码本身不需要装这个文件里的东西。
+-r requirements.txt
+
+# 打包 exe（README「重新打包」一节用到的命令）
+pyinstaller==6.22.3
+
+# lint（CI 里也跑它，见 .github/workflows/ci.yml）
+ruff==0.16.7

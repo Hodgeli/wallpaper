@@ -1,0 +1,41 @@
+# ruff 配置。跑法：
+#   .venv/Scripts/python.exe -m ruff check .          # 只检查
+#   .venv/Scripts/python.exe -m ruff check . --fix    # 顺手修能自动修的
+#
+# 为什么值得配：F 系列里的 F821（undefined name）正好能抓住「引用了没定义的常量」
+# 这类错误——真发生过：`EVICT_MIN_INTERVAL` 漏了定义，每次搜索都抛 NameError，
+# 被 UI 事件循环吞掉，界面看着完全正常，测试也全绿。这种问题交给工具比交给眼睛靠谱。
+
+line-length = 100
+target-version = "py312"
+
+exclude = [
+    ".venv",
+    "build",
+    "dist",
+    "__pycache__",
+]
+
+[lint]
+select = [
+    "E",    # pycodestyle error
+    "W",    # pycodestyle warning
+    "F",    # pyflakes：未使用变量 / 未定义名字（F821 是重点）
+    "I",    # isort：import 顺序
+    "UP",   # pyupgrade：用新语法
+    "B",    # flake8-bugbear：容易踩的坑
+]
+
+ignore = [
+    # 行长。中文注释按字符数算长度没意义（一个汉字在屏幕上占两个字宽），
+    # 而且 tkinter 那堆 grid 参数天然就长。折行交给编辑器。
+    "E501",
+    # 「函数默认值里调用了函数」。tkinter/ttk 里 `def f(self, x=list(...))` 这种
+    # 写法很常见，这里没有可变默认值的风险。
+    "B008",
+]
+
+[lint.per-file-ignores]
+# 测试脚本里 `from app.xxx import ...` 必须在设好 APPDATA 之后才 import，
+# 所以中间必然有一段 import 不在文件顶部。
+"app/tools/*.py" = ["E402"]

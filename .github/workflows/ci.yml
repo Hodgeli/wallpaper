@@ -1,0 +1,45 @@
+# CI：每次 push / PR 跑一遍 lint + 纯函数单测 + 版本号冒烟。
+#
+# 为什么是这三件事：
+#   - `ruff check` 能抓住「引用了没定义的常量」这类问题（F821）。真发生过：
+#     `EVICT_MIN_INTERVAL` 漏了定义，每次搜索都抛 NameError，被 UI 事件循环吞掉，
+#     界面完全正常、测试全绿，只有日志里有一行 ERROR。这种问题交给工具最划算。
+#   - `unit_test.py` 几秒跑完，覆盖 naming / config / store / api 的纯函数。
+#   - `python -m app --version` 顺手证明整个包能被 import、没有语法/导入期错误。
+#
+# **没有跑 `feature_test.py`**：它要开真窗口，还依赖一个可交互的桌面会话，
+# 在 runner 上不稳定。GUI 相关的回归目前只能在本地跑（`--no-net` 也是开真窗口的）。
+# 想把它搬上 CI 的话，得先做无头化改造——那是另一件事，别在没验证的情况下硬塞进来。
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    # 项目是 Windows 专用的：ctypes 调 user32、winreg 读注册表、Tk 界面
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: lint（ruff）
+        run: python -m ruff check .
+
+      - name: 纯函数单测
+        run: python app/tools/unit_test.py
+
+      - name: 冒烟：版本号打得出来
+        run: python -m app --version
