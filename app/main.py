@@ -75,7 +75,22 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    raw = list(sys.argv[1:] if argv is None else argv)
+    try:
+        args = build_parser().parse_args(raw)
+    except SystemExit as exc:
+        # argparse 报错时只往 stderr 打一行用法。打包成 --noconsole 的 exe 之后
+        # stderr 是空的，用户什么都看不到——右键菜单里点一下完全没反应、
+        # 日志里也一个字没有，根本无从查起。真发生过：注册表里的命令行末尾
+        # 粘进了一个换行，`--silent\n` 被当成未知参数。
+        # 所以这里往日志里留一条，并且用 %r 打出原样参数（能看出空白字符）。
+        if exc.code not in (0, None):   # -h / --version 是 0，不用记
+            setup_logging(level=logging.INFO, to_stderr=False).error(
+                "无法识别的命令行参数：%r。参数是按原样传入的，"
+                "注册表 / 快捷方式 / 计划任务里的尾随空格或换行同样会导致失败。",
+                raw,
+            )
+        raise
 
     setup_logging(
         level=logging.DEBUG if args.debug else logging.INFO,

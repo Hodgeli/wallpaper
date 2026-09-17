@@ -159,6 +159,31 @@ python app/tools/install_context_menu.py --uninstall        # 移除
 >
 > exe 挪过位置（重新打包、换目录）就得重跑一次，注册表里存的是绝对路径。
 
+#### 手动改注册表的话，注意别带尾随空白
+
+不想用脚本就手动建，两个键：
+
+```
+HKEY_CLASSES_ROOT\DesktopBackground\shell\WallhavenRandom
+    (默认)    随机换一张壁纸
+
+HKEY_CLASSES_ROOT\DesktopBackground\shell\WallhavenRandom\command
+    (默认)    "D:\path\to\WallpaperPicker.exe" --random --silent
+```
+
+`command` 这个词一个字都不能错，而且 **exe 路径必须带引号**（路径里通常有空格，
+不加引号 Windows 会从空格处切开，报「找不到文件」）。
+
+**最容易踩的坑：从别处复制命令行时，末尾会粘进一个看不见的换行或空格。**
+`--silent\n` 会被当成一个不认识的参数，程序立刻以退出码 2 结束——而 exe 是
+`--noconsole` 编译的，argparse 那条报错信息**没有任何地方能显示出来**。
+表现就是：右键点一下，什么都不发生，日志里也一个字都没有。
+
+> 真发生过（Windows 11 25H2）。现在程序会把这种情况记进日志，能看到
+> `无法识别的命令行参数：['--random', '--silent\n']`——`\n` 就是那个多出来的换行。
+> 但日志是事后才看的，**最省事的做法还是用上面的脚本注册，或者粘完之后
+> 手动把光标移到末尾按一次 End + Delete**。
+
 ### 从源码跑
 
 需要 [uv](https://docs.astral.sh/uv/)（本机已装）。
